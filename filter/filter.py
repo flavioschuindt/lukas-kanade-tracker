@@ -12,7 +12,7 @@ def sobel(img, kernel_size):
         gray = convert_to_gray_scale(img)
         pixels = gray.load()
         width, height = gray.size
-        dx = []  #np.zeros((height, width))
+        dx = []
         dy = []
         middle = kernel_size / 2
         for j in range(height):
