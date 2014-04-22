@@ -55,6 +55,6 @@ if __name__ == "__main__":
 
 	for point in good_points:
 		x, y, eg = point
-		pixels[x,y] = (255, 0, 0)
+		pixels[x,y] = 128
 
-	im.save("data/harris.png", "png")
+	im.save("data/harris_from_blur.png", "png")

@@ -222,30 +222,31 @@ def harris(img, kernel_size):
 
             c = np.array([[sum_ix2, sum_ix_iy], [sum_ix_iy, sum_iy2]]) # correlation matrix
             w, v = np.linalg.eig(c) # eigenvalues, eigenvectors
-            corner_response = w[0]*w[1] - (0.06*((w[0]+w[1]) ** 2)) # corner response
-            if corner_response > 1000000000000:
+            #min_w = min(w)
+            corner_response = w[0]*w[1] - (0.04*((w[0]+w[1]) ** 2)) #min_w # corner response
+            if corner_response > 1200000:
                 good_points.append((i, j, min(w)))
 
     # Finally, sort descending and get the maximum value (highest minimun eigenvalue) in a neighboorhood.
     good_points = sorted(good_points, key=lambda x: x[2], reverse=True)
-    '''i = 0
-    len_good_points = len(good_points)
-    while i < len_good_points:
-        current_point = good_points[i]
-        good_points = good_points[0:i] + [gp for gp in good_points if abs(gp[0] - current_point[0]) > middle or abs(gp[1] - current_point[1]) > middle]
-        len_good_points = len(good_points)
-        i += 1'''
+
+    corners = []
+
+    # Non maximum supression
 
     to_be_processed = good_points
     point = good_points[0] if len(good_points) > 0 else None
     corners = []
     i = 0
-    while i < len(good_points):
+    print "\nEscolhendo pontos Harris...\n"
+    while point is not None:
         p, to_be_processed, total_removed = _remove_neighboors(point, to_be_processed, middle)
         point = to_be_processed[0] if len(to_be_processed) > 0 else None
         corners.append(p)
         i += total_removed
         print "len_good_points: %d | i: %d | Removidos: %d | Restam: %d" % (len(good_points), i, total_removed, len(to_be_processed))
+
+    print "\nFIM.\n"
 
     return corners
 
