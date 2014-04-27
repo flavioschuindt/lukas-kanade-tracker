@@ -7,7 +7,7 @@ from PIL import Image
 
 from filter.filter import sobel, harris, convert_to_gray_scale
 from utils.utils import create_image_from_pixels, communicate_with_ffmpeg_by_pipe, extract_frame_from_video_buffer, \
-						diff, calc_ix_it_iy_it 
+						diff, calc_ix_it_iy_it, draw_velocity_vector
 						
 
 if __name__ == "__main__":
@@ -15,6 +15,9 @@ if __name__ == "__main__":
 	# Open two frames
 	f1 = Image.open(sys.argv[1])
 	f2 = Image.open(sys.argv[2])
+
+	print f1.mode
+	print f2.mode
 
 	# Obtain difference between frames
 	dt = diff(f1, f2)
@@ -32,20 +35,23 @@ if __name__ == "__main__":
 		left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
 		u, v = np.linalg.solve(left, right)
 		print "O ponto (%d, %d) tem o vetor velocidade (%f, %f) e portanto sua localização no frame 2 é (%f, %f)" % (j, i, u, v, round(j+v), round(i+u))
+		f1 = draw_velocity_vector(f1, (j, i), (v, u))
+
+	f1.save("data/flow.png", "png")
 
 '''if __name__ == "__main__":
 
 
-	pipe = communicate_with_ffmpeg_by_pipe(sys.argv[1])
+	pipe = communicate_with_ffmpeg_by_pipe(sys.argv[1], 'rgb24')
 
 	i = 0
 	while True:
-		frame = extract_frame_from_video_buffer(pipe.stdout, 1920, 800)
+		frame = extract_frame_from_video_buffer(pipe.stdout, 1920, 800, 3)
 		if frame is None:
 			break
 		i += 1
 		result = Image.fromarray(frame)
-		result.save("data/frames2/frame_%s.png" % str(i), "png")
+		result.save("data/frames_RGB/frame_%s.png" % str(i), "png")
 
 	pipe.terminate()'''
 
