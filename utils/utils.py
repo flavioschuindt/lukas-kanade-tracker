@@ -2,7 +2,7 @@
 
 import subprocess
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageChops
 
 from filter.filter import convert_to_gray_scale
 
@@ -134,4 +134,9 @@ def draw_velocity_vector(im, point, vector):
     draw.line([point, new_position], fill=(255,0,0))
     del draw
     return im
+
+def right_shift_image(im, offset_x, offset_y):
+
+    return ImageChops.offset(im, offset_x, offset_y)
+
 

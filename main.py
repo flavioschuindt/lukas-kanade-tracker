@@ -1,43 +1,59 @@
 #coding: utf-8
 import sys
 from math import sqrt, pow
+from time import time
 
 import numpy as np
 from PIL import Image
 
 from filter.filter import sobel, harris, convert_to_gray_scale
 from utils.utils import create_image_from_pixels, communicate_with_ffmpeg_by_pipe, extract_frame_from_video_buffer, \
-						diff, calc_ix_it_iy_it, draw_velocity_vector
+						diff, calc_ix_it_iy_it, draw_velocity_vector, right_shift_image
 						
 
-if __name__ == "__main__":
+'''if __name__ == "__main__":
 
+	im = Image.open(sys.argv[1])
+	im = right_shift_image(im, 60, 0)
+	im.save("data/frame_359_2.png", "png")'''
+
+
+if __name__ == "__main__":
+	start = time()
 	# Open two frames
 	f1 = Image.open(sys.argv[1])
 	f2 = Image.open(sys.argv[2])
+	print "Abertura dos dois frames: %.2f segundos" % (time() - start)
 
-	print f1.mode
-	print f2.mode
-
+	start = time()
 	# Obtain difference between frames
 	dt = diff(f1, f2)
+	print "dt: %.2f segundos" % (time() - start)
 
 	# Apply sobel and harris to get the best points to track
 	width, height = f1.size
-	print "Inicio Sobel"
-	dx, dy = sobel(f1, 3)
-	print "Fim Sobel"
-	corners = harris(dx, dy, width, height, 3)
 
+	start = time()
+	dx, dy = sobel(f1, 3)
+	print "Sobel: %.2f segundos" % (time() - start)
+
+	start = time()
+	corners = harris(dx, dy, width, height, 3)
+	print "Harris: %.2f segundos" % (time() - start)
+
+	start = time()
+	# For each corner, i.e, a good feature to track, solve flow equation and draw the velocity vector in frame 1
 	for corner in corners:
 		j, i, min_w, c = corner
 		right = calc_ix_it_iy_it(j, i, 3, dx, dy, dt)
 		left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
 		u, v = np.linalg.solve(left, right)
-		print "O ponto (%d, %d) tem o vetor velocidade (%f, %f) e portanto sua localização no frame 2 é (%f, %f)" % (j, i, u, v, round(j+v), round(i+u))
+		#print "O ponto (%d, %d) tem o vetor velocidade (%f, %f) e portanto sua localização no frame 2 é (%f, %f)" % (j, i, u, v, round(j+v), round(i+u))
 		f1 = draw_velocity_vector(f1, (j, i), (v, u))
 
-	f1.save("data/flow.png", "png")
+	print "Flow equation: %.2f segundos" % (time() - start)
+
+	f1.save("data/flow_1459_1460.png", "png")
 
 '''if __name__ == "__main__":
 
