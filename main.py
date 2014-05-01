@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
 	print "Flow equation: %.2f segundos" % (time() - start)
 
-	f1.save("data/flow_359_359_60.png", "png")
+	f1.save("data/flow_359_359_1_b.png", "png")
 
 '''if __name__ == "__main__":
 
