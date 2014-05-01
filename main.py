@@ -14,8 +14,8 @@ from utils.utils import create_image_from_pixels, communicate_with_ffmpeg_by_pip
 '''if __name__ == "__main__":
 
 	im = Image.open(sys.argv[1])
-	im = right_shift_image(im, 60, 0)
-	im.save("data/frame_359_2.png", "png")'''
+	im = right_shift_image(im, 1, 0)
+	im.save("data/frame_359_1.png", "png")'''
 
 
 if __name__ == "__main__":
@@ -49,11 +49,11 @@ if __name__ == "__main__":
 		left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
 		u, v = np.linalg.solve(left, right)
 		#print "O ponto (%d, %d) tem o vetor velocidade (%f, %f) e portanto sua localização no frame 2 é (%f, %f)" % (j, i, u, v, round(j+v), round(i+u))
-		f1 = draw_velocity_vector(f1, (j, i), (v, u))
+		f1 = draw_velocity_vector(f1, (i, j), (u, v))
 
 	print "Flow equation: %.2f segundos" % (time() - start)
 
-	f1.save("data/flow_1459_1460.png", "png")
+	f1.save("data/flow_359_359_60.png", "png")
 
 '''if __name__ == "__main__":
 
@@ -120,4 +120,4 @@ if __name__ == "__main__":
 		j, i, min_w, c = corner
 		pixels[i, j] = (0, 255, 0)
 
-	im.save("data/harris_from_blur.png", "png")'''
+	im.save("data/frame_359_harris.png", "png")'''

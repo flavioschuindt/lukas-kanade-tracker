@@ -131,7 +131,7 @@ def calc_ix_it_iy_it(j, i, kernel_size, dx, dy, dt):
 def draw_velocity_vector(im, point, vector):
     draw = ImageDraw.Draw(im)
     new_position = (int(round(point[0] + vector[0])), int(round(point[1]+ vector[1])))
-    draw.line([point, new_position], fill=(255,0,0))
+    draw.line([point, new_position], fill=(255,0,0), width=2)
     del draw
     return im
 
