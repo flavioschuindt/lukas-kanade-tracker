@@ -8,8 +8,44 @@ from PIL import Image
 
 from filter.filter import sobel, harris, convert_to_gray_scale
 from utils.utils import create_image_from_pixels, communicate_with_ffmpeg_by_pipe, extract_frame_from_video_buffer, \
-						diff, calc_ix_it_iy_it, draw_velocity_vector, right_shift_image
+						diff, calc_ix_it_iy_it, draw_velocity_vector, right_shift_image, get_resolutions, lukas_kanade_pyramidal
 						
+
+if __name__ == "__main__":
+
+	# Open two frames
+	f1 = Image.open(sys.argv[1])
+	f2 = Image.open(sys.argv[2])
+
+	f1_levels = get_resolutions(f1, 3)
+	f2_levels = get_resolutions(f2, 3)
+	f1_levels.append(f1)
+	f2_levels.append(f2)
+
+
+	width, height = f1.size
+	current_flow = np.zeros((height, width, 2))
+
+	# Apply sobel and harris to get the best points to track
+
+	start = time()
+	dx, dy = sobel(f1, 3)
+	print "Sobel: %.2f segundos" % (time() - start)
+
+	start = time()
+	corners = harris(dx, dy, width, height, 3)
+	print "Harris: %.2f segundos" % (time() - start)
+
+	for k in range(len(f1_levels)):
+		f1 = f1_levels[k]
+		f2 = f2_levels[k]
+
+		start = time()
+		dt = diff(f1, f2)
+		print "dt: %.2f segundos" % (time() - start)
+		current_flow = lukas_kanade_pyramidal(corners, dx, dy, dt, width, height, current_flow)
+		print "Flow equation: %.2f segundos" % (time() - start)
+
 
 '''if __name__ == "__main__":
 
@@ -18,7 +54,7 @@ from utils.utils import create_image_from_pixels, communicate_with_ffmpeg_by_pip
 	im.save("data/frame_359_1.png", "png")'''
 
 
-if __name__ == "__main__":
+'''if __name__ == "__main__":
 	start = time()
 	# Open two frames
 	f1 = Image.open(sys.argv[1])
@@ -53,7 +89,7 @@ if __name__ == "__main__":
 
 	print "Flow equation: %.2f segundos" % (time() - start)
 
-	f1.save("data/flow_359_359_1_b.png", "png")
+	f1.save("data/flow_1459_1460_b.png", "png")'''
 
 '''if __name__ == "__main__":
 
