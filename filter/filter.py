@@ -103,7 +103,7 @@ def _remove_neighboors(point, points, middle):
     not_removed = [gp for gp in points if abs(gp[0] - point[0]) > middle or abs(gp[1] - point[1]) > middle]
     return (point, not_removed, len(points)-len(not_removed))
 
-def _calculate_covariance_matrix(dx, dy, i, j, middle):
+def calculate_covariance_matrix(dx, dy, i, j, middle):
 
     sum_ix2 = 0
     sum_iy2 = 0
@@ -113,9 +113,12 @@ def _calculate_covariance_matrix(dx, dy, i, j, middle):
 
     # ∑Ix², ∑Iy², ∑IxIy 
 
-    sum_ix2 += dx[j, i] ** 2
-    sum_iy2 += dy[j, i] ** 2
-    sum_ix_iy += dx[j, i] * dy[j, i]
+    try:
+        sum_ix2 += dx[j, i] ** 2
+        sum_iy2 += dy[j, i] ** 2
+        sum_ix_iy += dx[j, i] * dy[j, i]
+    except:
+        pass
 
     # right neighboorhood
     for l in range(1, middle + 1):
@@ -223,7 +226,7 @@ def harris(dx, dy, width, height, kernel_size):
         if stop:
             break
         for i in range(0, width, HARRIS_STEP_SIZE):
-            c = _calculate_covariance_matrix(dx, dy, i, j, middle) # covariance matrix
+            c = calculate_covariance_matrix(dx, dy, i, j, middle) # covariance matrix
             w, v = np.linalg.eig(c) # eigenvalues, eigenvectors
             corner_response = _get_corner_response(w)
             if corner_response > CORNER_RESPONSE_THRESHOLD:

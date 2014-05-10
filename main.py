@@ -26,6 +26,9 @@ if __name__ == "__main__":
 	width, height = f1.size
 	current_flow = np.zeros((height, width, 2))
 
+	# Temporal difference between frames
+	dt = diff(f1, f2)
+
 	# Apply sobel and harris to get the best points to track
 
 	start = time()
@@ -36,16 +39,14 @@ if __name__ == "__main__":
 	corners = harris(dx, dy, width, height, 3)
 	print "Harris: %.2f segundos" % (time() - start)
 
-	for k in range(len(f1_levels)):
-		f1 = f1_levels[k]
-		f2 = f2_levels[k]
+	# Obtain optical flow using pyramidal implemenatation of lukas kanade feature tracker
+	start = time()
+	optical_flow = lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, 3)
+	for point, velocity_vector in optical_flow:
+		f1 = draw_velocity_vector(f1, point, velocity_vector)
 
-		start = time()
-		dt = diff(f1, f2)
-		print "dt: %.2f segundos" % (time() - start)
-		current_flow = lukas_kanade_pyramidal(corners, dx, dy, dt, width, height, current_flow)
-		print "Flow equation: %.2f segundos" % (time() - start)
-
+	print "Lukas Kanade Pyramidal: %.2f segundos" % (time() - start)
+	f1.save("data/flow_pyramid.png", "png")
 
 '''if __name__ == "__main__":
 
