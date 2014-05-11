@@ -51,8 +51,8 @@ if __name__ == "__main__":
 '''if __name__ == "__main__":
 
 	im = Image.open(sys.argv[1])
-	im = right_shift_image(im, 1, 0)
-	im.save("data/frame_359_1.png", "png")'''
+	im = right_shift_image(im, 5, 0)
+	im.save("data/frame_359_5.png", "png")'''
 
 
 '''if __name__ == "__main__":

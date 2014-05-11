@@ -147,8 +147,11 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
         k -= 1
 
 
+    dt_image_top = diff(f1_levels[0], f2_levels[0])
+    dx_image_top, dy_image_top = sobel(f1_levels[0], kernel_size)
     for corner in corners:
         j, i = corner[0], corner[1] # Corner coordinates in the highest resolution level (pyramid basis)
+        j_basis, i_basis = j, i
 
         # Obtain optical flow to lowest resolution (pyramid top)
 
@@ -156,13 +159,15 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
         j = j / (2 ** (len(f1_levels) - 1))
         i = i / (2 ** (len(f1_levels) - 1))
 
-        dt_image_top = diff(f1_levels[0], f2_levels[0])
-        dx_image_top, dy_image_top = sobel(f1_levels[0], kernel_size)
         c = calculate_covariance_matrix(dx_image_top, dy_image_top, i, j, middle) # covariance matrix for the correspondent point in the lowest resolution
 
         right = calc_ix_it_iy_it(j, i, kernel_size, dx_image_top, dy_image_top, dt_image_top)
         left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
-        u, v = np.linalg.solve(left, right)
+        try:
+            u, v = np.linalg.solve(left, right)
+        except:
+            flow.append(((i_basis, j_basis), (0,0)))
+            continue
 
         """
             Now, we should propagate this partial flow to the next pyramid level (L - 1).
@@ -178,6 +183,7 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
         # Obtain optical flow to intermediate resolutions (all resolutions except first and last - top and basis)
         corner_flow = (u,v)
         k = len(f1_levels_without_top_and_basis)
+        stop = False
         for f1, f2 in zip(f1_levels_without_top_and_basis, f2_levels_without_top_and_basis):
             u, v = corner_flow
             j = j * 2
@@ -189,9 +195,17 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
 
             right = calc_ix_it_iy_it(j+2*v, i+2*u, kernel_size, dx_level, dy_level, dt_level)
             left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
-            new_u, new_v = np.linalg.solve(left, right)
-            corner_flow = (2*u+new_u, 2*v+new_v)
-            k -= 1
+            try:
+                new_u, new_v = np.linalg.solve(left, right)
+                corner_flow = (2*u+new_u, 2*v+new_v)
+                k -= 1
+            except:
+                flow.append(((i_basis, j_basis), corner_flow))
+                stop = True
+                continue
+
+        if stop:
+            continue
 
         # Last resolution (pyramid basis). Final optical flow.
         u, v = corner_flow
@@ -201,9 +215,13 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
 
         right = calc_ix_it_iy_it(j+2*v, i+2*u, kernel_size, dx, dy, dt)
         left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
-        new_u, new_v = np.linalg.solve(left, right)
+        try:
+            new_u, new_v = np.linalg.solve(left, right)
+        except:
+            flow.append(((i_basis, j_basis), corner_flow))
+            continue
         corner_flow = (2*u+new_u, 2*v+new_v)
-        flow.append(((i,j), corner_flow))
+        flow.append(((i_basis,j_basis), corner_flow))
 
     return flow
     
