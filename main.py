@@ -13,40 +13,57 @@ from utils.utils import create_image_from_pixels, communicate_with_ffmpeg_by_pip
 
 if __name__ == "__main__":
 
-	# Open two frames
+	pipe = communicate_with_ffmpeg_by_pipe(sys.argv[1], 'rgb24')
+
+	f1 = extract_frame_from_video_buffer(pipe.stdout, 1920, 1080, 3)
+	if f1 is not None:
+		f1 = Image.fromarray(f1)
+	i = 1
+	while f1 is not None:	
+		f2 = extract_frame_from_video_buffer(pipe.stdout, 1920, 1080, 3)
+		if f2 is None:
+			break
+		f2 = Image.fromarray(f2)
+
+		f1_levels = get_resolutions(f1, 3)
+		f2_levels = get_resolutions(f2, 3)
+		f1_levels.append(f1)
+		f2_levels.append(f2)
+
+
+		width, height = f1.size
+
+		# Temporal difference between frames
+		dt = diff(f1, f2)
+
+		# Apply sobel and harris to get the best points to track
+
+		start = time()
+		dx, dy = sobel(f1, 3)
+		print "Sobel: %.2f segundos" % (time() - start)
+
+		start = time()
+		corners = harris(dx, dy, width, height, 3)
+		print "Harris: %.2f segundos" % (time() - start)
+
+		# Obtain optical flow using pyramidal implemenatation of lukas kanade feature tracker
+		start = time()
+		optical_flow = lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, 3)
+		for point, velocity_vector in optical_flow:
+			f1 = draw_velocity_vector(f1, point, velocity_vector)
+
+		print "Lukas Kanade Pyramidal: %.2f segundos" % (time() - start)
+		f1.save("data/walk/flow_%s_to_%s.png" % (i, i+1), "png")
+
+		i += 1
+		f1 = f2
+
+	pipe.terminate()
+
+	'''# Open two frames
 	f1 = Image.open(sys.argv[1])
-	f2 = Image.open(sys.argv[2])
+	f2 = Image.open(sys.argv[2])'''
 
-	f1_levels = get_resolutions(f1, 3)
-	f2_levels = get_resolutions(f2, 3)
-	f1_levels.append(f1)
-	f2_levels.append(f2)
-
-
-	width, height = f1.size
-	current_flow = np.zeros((height, width, 2))
-
-	# Temporal difference between frames
-	dt = diff(f1, f2)
-
-	# Apply sobel and harris to get the best points to track
-
-	start = time()
-	dx, dy = sobel(f1, 3)
-	print "Sobel: %.2f segundos" % (time() - start)
-
-	start = time()
-	corners = harris(dx, dy, width, height, 3)
-	print "Harris: %.2f segundos" % (time() - start)
-
-	# Obtain optical flow using pyramidal implemenatation of lukas kanade feature tracker
-	start = time()
-	optical_flow = lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, 3)
-	for point, velocity_vector in optical_flow:
-		f1 = draw_velocity_vector(f1, point, velocity_vector)
-
-	print "Lukas Kanade Pyramidal: %.2f segundos" % (time() - start)
-	f1.save("data/flow_pyramid.png", "png")
 
 '''if __name__ == "__main__":
 

@@ -53,6 +53,8 @@ def calc_ix_it_iy_it(j, i, kernel_size, dx, dy, dt):
 
     middle = kernel_size / 2
 
+    sum_ix_it = 0
+    sum_iy_it = 0
     try:
         sum_ix_it = dx[j, i] * dt[j, i]
         sum_iy_it = dy[j, i] * dt[j, i]
@@ -156,8 +158,8 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
         # Obtain optical flow to lowest resolution (pyramid top)
 
         # Find correspondent point (i,j) from the highest resolution level in the lowest resolution level 
-        j = j / (2 ** (len(f1_levels) - 1))
-        i = i / (2 ** (len(f1_levels) - 1))
+        j = round(j / (2 ** (len(f1_levels) - 1)))
+        i = round(i / (2 ** (len(f1_levels) - 1)))
 
         c = calculate_covariance_matrix(dx_image_top, dy_image_top, i, j, middle) # covariance matrix for the correspondent point in the lowest resolution
 
@@ -191,9 +193,9 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
 
             dt_level = intermediate_levels_gradient[k]['dt']
             dx_level, dy_level = intermediate_levels_gradient[k]['dx'], intermediate_levels_gradient[k]['dy']
-            c = calculate_covariance_matrix(dx_level, dy_level, i+2*u, j+2*v, middle)
+            c = calculate_covariance_matrix(dx_level, dy_level, round(i+2*u), round(j+2*v), middle)
 
-            right = calc_ix_it_iy_it(j+2*v, i+2*u, kernel_size, dx_level, dy_level, dt_level)
+            right = calc_ix_it_iy_it(round(j+2*v), round(i+2*u), kernel_size, dx_level, dy_level, dt_level)
             left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
             try:
                 new_u, new_v = np.linalg.solve(left, right)
@@ -211,9 +213,9 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
         u, v = corner_flow
         j = j * 2
         i = i * 2
-        c = calculate_covariance_matrix(dx, dy, i+2*u, j+2*v, middle)
+        c = calculate_covariance_matrix(dx, dy, round(i+2*u), round(j+2*v), middle)
 
-        right = calc_ix_it_iy_it(j+2*v, i+2*u, kernel_size, dx, dy, dt)
+        right = calc_ix_it_iy_it(round(j+2*v), round(i+2*u), kernel_size, dx, dy, dt)
         left = np.array([[c[0][0], c[0][1]], [c[0][1], c[1][1]]])
         try:
             new_u, new_v = np.linalg.solve(left, right)
