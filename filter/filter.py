@@ -242,17 +242,11 @@ def harris(dx, dy, width, height, kernel_size):
     to_be_processed = good_points
     point = good_points[0] if len(good_points) > 0 else None
     corners = []
-    i = 0
-    print "\nEscolhendo pontos Harris...\n"
     middle = HARRIS_SUPRESSION_KERNEL_SIZE / 2
     while point is not None:
         p, to_be_processed, total_removed = _remove_neighboors(point, to_be_processed, middle)
         point = to_be_processed[0] if len(to_be_processed) > 0 else None
         corners.append(p)
-        i += total_removed
-        print "len_good_points: %d | i: %d | Removidos: %d | Restam: %d" % (len(good_points), i, total_removed, len(to_be_processed))
-
-    print "\nFIM.\n"
 
     return corners
 
