@@ -230,8 +230,8 @@ def lukas_kanade_pyramidal(corners, f1_levels, f2_levels, dx, dy, dt, kernel_siz
 def draw_velocity_vector(im, point, vector):
     draw = ImageDraw.Draw(im)
     new_position = (point[0] + vector[0], point[1]+ vector[1])
-    draw.line([point, new_position], fill=(0,255,0), width=1)
-    draw.point([new_position], fill=(0,0,255))
+    draw.line([point, new_position], fill=(255,0,0), width=1)
+    draw.point([new_position], fill=(255,255,0))
     del draw
     return im
 
